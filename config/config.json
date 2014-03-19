@@ -1,0 +1,13 @@
+{
+    "session": {
+        "secret": "yourownsecret",
+        "age": 0
+    },
+
+    "app": {
+        "port":3000
+    },
+
+    "redisURL": "http://localhost/"
+
+}
