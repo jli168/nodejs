@@ -42,7 +42,31 @@ function Routes(app){
      *   Homepage
      */
     app.get('/', function(req, res, next){
-        res.render('index');
+        console.log('session: '+ req.sessionID);
+//        if(typeof req.cookies['PHPSESSID'] !== 'undefined'){
+//            console.log('PHPSESSID.sid '+req.cookies['PHPSESSID']);
+//        }
+//        if(typeof req.cookies['app.sess'] !== 'undefined'){
+//            console.log('app.sess '+req.cookies['app.sess']);
+//        }
+        console.log(req.cookies);
+        console.log('now it is session');
+        console.log(req.session);
+        console.log(req.session.cookie);
+        res.cookie('count', 10);
+        res.render('index',{ title: "first chat room"});
+    });
+
+
+    app.get('/msg_form', function(req, res){
+        console.log('in /msg_form route');
+        console.log('session: '+ req.sessionID);
+        console.log(req.cookies);
+        console.log('now it is session');
+        console.log(req.session);
+        console.log(req.session.cookie);
+
+        res.render('msg_form');
     });
 
 }

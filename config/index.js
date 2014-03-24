@@ -5,8 +5,9 @@
 var express = require('express'),
     path = require('path'),
     url = require('url'),
-    http = require('http');
-
+    http = require('http'),
+    RedisStore = require('connect-redis')(express), //provide session store in redis
+    redisClient = require("redis").createClient();
 
 
 module.exports = Config;
@@ -28,9 +29,11 @@ function Config(app){
 
     app.set('redisURL', config.redisURL);
 
-    app.set('views', path.join(__dirname, 'views'));
+    app.set('views', path.join(__dirname, '../','views'));
 
-    app.use(express.static(path.join(__dirname, 'public')));
+    app.use(express.static(path.join(__dirname,'../', 'public')));
+
+
 
     app.use(express.favicon());
     app.use(express.logger('dev'));
@@ -39,16 +42,27 @@ function Config(app){
     app.use(express.methodOverride());
 
 
+    /*
+        the reason not using bodyParser is that some parts of will be not be used...
+     */
+   // app.use(express.bodyParser()); //add bodyParser
     app.use(express.cookieParser(config.session.secret));
 
     app.use(express.session({
-        key: "chatroom",
+        key: 'express.sid',
+        secret: 'yourownsecret',
         cookie: {
             maxAge: config.session.age || null
-        }
+        },
+        store: new RedisStore({
+            host: config.app.host,
+            port: '6379',
+            db: 'sessionDb',
+            prefix:'sess',
+            client: redisClient
+        })
     }));
 
- //   app.use(express.bodyParser()); //add bodyParser
 
 
     app.use(app.router);
