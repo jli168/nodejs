@@ -1,0 +1,28 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="stylesheets/chatroom.css" />
+    <script type='text/javascript' src="javascripts/jquery-2.1.0.js"></script>
+    <script type="text/javascript" src='/socket.io/socket.io.js' ></script>
+    <script type="text/javascript" src="javascripts/my_socket.js"></script>
+</head>
+
+<body>
+<% include menu %>
+<h1>Chatroom</h1>
+<div id="messages">
+    <h3>Welcome to the main chatroom</h3>
+</div>
+<div id="users">
+    <ul>
+        <li>Robot1</li>
+        <li>Robot2</li>
+    </ul>
+</div><br class="clearer" />
+<form id="enter_msg">
+    <input name="message" id="field-message" placeholder="Your message" />
+    <input type="submit"  id="submit" value="Enter" />
+</form>
+</body>
+</html>

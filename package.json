@@ -11,6 +11,8 @@
     "connect": "~2.14.3",
     "redis": "~0.10.1",
     "connect-redis": "~1.4.7",
-    "cookie": "~0.1.1"
+    "cookie": "~0.1.1",
+    "debug": "~0.7.4",
+    "bcrypt-nodejs": "0.0.3"
   }
 }

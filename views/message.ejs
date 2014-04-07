@@ -1,0 +1,6 @@
+<% if(Array.isArray(locals.messages)){ %>
+<% locals.messages.forEach(function(msg){%>
+<p><%= msg.string%></p>
+<% })%>
+<% locals.removeMessages() %>
+<% }%>

@@ -1,0 +1,14 @@
+
+<html>
+<head>
+    <title>Create a new chatroom</title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+</head>
+<body>
+    <% include menu %>
+    <form method="post" action="/create_chatroom">
+        <input type="text" name="chatroom_name" placeholder="chatroom name">
+        <input type="text" name="chatroom_info" placeholder="chatroom information">
+        <input type="submit" name="create" value="Create">
+    </form>
+</html>

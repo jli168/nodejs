@@ -4,6 +4,7 @@
 var express = require('express');
 
 var app = exports.app = express();
+var log = require('debug')('chatroom');
 
 /**
  * Configure application

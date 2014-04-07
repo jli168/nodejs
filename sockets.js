@@ -11,6 +11,7 @@ var sio = require('socket.io'),
     cookie = require('cookie'),
      fs = require('fs');
 var express = require('express');
+var User = require('./lib/user/user');
 /**
  *Expose Sockets initialization
  */
@@ -66,7 +67,8 @@ var parse = function(str, opt) {
  */
 function Sockets(app, server) {
     var config = app.get('config');
-
+    var sessionStore = app.get('sessionStore');
+    var redisClient = app.get('redisClient');
 /*
     var io = sio.listen(server);
     io.set('authorization', function(data, accept){
@@ -108,40 +110,75 @@ function Sockets(app, server) {
 */
 
     var io = sio.listen(server);
+    io.set('log level', 1); // reduce logging
+
+    //do authorization check before routing
     io.set('authorization', function (data, accept) {
         // check if there's a cookie header
         if (data.headers.cookie) {
             // if there is, parse the
             var tempCo = cookie.parse(data.headers.cookie);
-            console.log('in auth to check data');
-            console.log(typeof tempCo);
-            console.log(tempCo);
-
             data.cookie = parseCookies(tempCo,'yourownsecret')
-            console.log(typeof data.cookie);
-            console.log(data.cookie);
-//             data.cookie = parseCookies(tempCo,'yourownsecret');
-
+//            console.log(typeof data.cookie);
+//            console.log(data.cookie);
 
             // note that you will need to use the same key to grad the
             // session id, as you specified in the Express setup.
             data.sessionID = data.cookie['express.sid'];
-
+           // data.sessionStore = sessionStore;
+            sessionStore.load(data.sessionID, function(err, session){
+                if(err || !session) {
+                    return accept('Error retrieving session!', false);
+                }else{
+                console.log('load session');
+                // save the session data and accept the connection
+                data.session = session;
+                console.log('now socket knows the login user id is '+data.session.user.id);
+//                console.log(session);
+//                data.session = new Session(data, session);
+                accept(null, true);
+                }
+            });
         } else {
             // if there isn't, turn down the connection with a message
             // and leave the function.
             return accept('No cookie transmitted.', false);
         }
-        // accept the incoming connection
-        accept(null, true);
+
     });
+
+    //set the process storage as RedisStore
+    io.set('store', new sio.RedisStore({
+        redisPub : redisClient,
+        redisSub : redisClient,
+        redisClient: redisClient
+    }));
 
 
     io.sockets.on('connection', function(socket){
+      /*
         console.log('Socket server is connected');
         console.log('A socket with sessionID '+socket.handshake.sessionID
         +' is connected');
+        console.log('and we got the session data, too');
+        console.log(socket.handshake.session);
+        socket.handshake.session.fooe = 'abc';
+        socket.handshake.session.save();
+       */
+      var sessionUser = socket.handshake.session.user;
+      console.log('socket server is connected...');
+      console.log(sessionUser);
 
+      socket.join('mainroom');
+      socket.broadcast.to('mainroom').emit('newUser',sessionUser.name+' has joined our chatroom!');
+
+
+      socket.on('message', function(msg){
+            console.log('server received a message');
+            console.log(msg);
+            msg = JSON.parse(msg);
+            socket.broadcast.to('mainroom').emit('userMsg',sessionUser.name + ' says: '+msg.message);
+      });
 
     })
 

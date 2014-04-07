@@ -2,18 +2,23 @@
  * Created by Jason on 3/19/14.
  */
 
-var express = require('express'),
+var log = require('debug')('MYAPP'),
+    express = require('express'),
     path = require('path'),
     url = require('url'),
     http = require('http'),
     RedisStore = require('connect-redis')(express), //provide session store in redis
-    redisClient = require("redis").createClient();
+    messages = require('../lib/messages'),
+    user = require('../lib/middleware/user');
 
 
 module.exports = Config;
 
 function Config(app){
+
     console.log('Attempt to load from config.json');
+
+
     try{
         config = require('./config.json');
     }catch(err){
@@ -29,11 +34,31 @@ function Config(app){
 
     app.set('redisURL', config.redisURL);
 
+
+
+
     app.set('views', path.join(__dirname, '../','views'));
 
     app.use(express.static(path.join(__dirname,'../', 'public')));
 
 
+    var redisClient = require("redis").createClient();
+
+    //make sure redisClient is working
+    redisClient
+        .on('error', function(err) {
+            console.log('Error connecting to redis %j', err);
+        }).on('connect', function() {
+            console.log('Connected to redis.');
+        }).on('ready', function() {
+            console.log('Redis client ready.');
+        });
+
+//    console.log('Saving redisClient connection in app');
+    app.set('redisClient', redisClient);
+
+//    console.log('Creating and saving a session store instance with redis client.');
+    app.set('sessionStore', new RedisStore({client: redisClient}));
 
     app.use(express.favicon());
     app.use(express.logger('dev'));
@@ -54,17 +79,12 @@ function Config(app){
         cookie: {
             maxAge: config.session.age || null
         },
-        store: new RedisStore({
-            host: config.app.host,
-            port: '6379',
-            db: 'sessionDb',
-            prefix:'sess',
-            client: redisClient
-        })
+        store: app.get('sessionStore')
     }));
 
 
-
+    app.use(user);
+    app.use(messages);
     app.use(app.router);
 
 

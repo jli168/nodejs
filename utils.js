@@ -23,4 +23,14 @@ exports.merge = function merge(a, b){
         }
     }
     return a;
+};
+
+//make sure user logged in
+exports.requireLogin = function(req, res, next){
+    if(req.session.loggedIn){
+        next();
+    }else{
+        res.error('User not logged in');
+        res.render('index',{title: "first chat room"});
+    }
 }
